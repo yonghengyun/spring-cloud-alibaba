@@ -140,53 +140,81 @@ public class TongYiController {
      * @param prompt The prompt for the audio, default is "你好，Spring Cloud Alibaba AI 框架！"
      * @return The generated audio as a string representation.
      */
-@GetMapping("/音频/语音")
-    公众的线热瑙迪奥(@RequestParam(值="提示",
-默认值="你好，春云阿里巴巴AI框架!")线提示) {
-        返回通约迪奥服务。热瑙迪奥(提示);
+    @GetMapping("/audio/speech")
+    public String genAudio(@RequestParam(value = "prompt",
+            defaultValue = "你好，Spring Cloud Alibaba AI 框架！") String prompt) {
+        return tongYiAudioService.genAudio(prompt);
     }
 
     /**
-*依桐音频转录服务接口，用于将音频内容转录为文本。
+     * Service interface for TongYi's audio transcription, used for transcribing audio content into text.
      */
-@自动连线
-@限定符(" tonyaudiotranscriptionserviceimpl ")
-    私人的统一服务统一音频转录服务;
+    @Autowired
+    @Qualifier("tongYiAudioTranscriptionServiceImpl")
+    private TongYiService tongYiAudioTranscriptionService;
 
     /**
-*将指定URL中的音频内容转录为文本。
-* @param url音频的url，默认是一个样本音频文件。
-* @返回转录的文本结果。
+     * Transcribes the audio content from the specified URL into text.
+     * @param url The URL of the audio, default is a sample audio file.
+     * @return The transcribed text result.
      */
     /**
-*音频转录。支持URL音频资源。
-* {@link Resource}
-* {@link转录参数}
-* @param url音频url。
-* @返回转录结果，是字符串类型。
+     * audio transcription. Support urls audio resource.
+     * {@link Resource}
+     * {@link TranscriptionParam}
+     * @param url audio url.
+     * @return transcription result, is String type.
      */
-@GetMapping("/音频/转录")
-    公众的线音频转录(@RequestParam(值="音频网址",
-默认值=" https://dash scope . OSS-cn-Beijing . aliyuncs . com/samples/audio/para former/real time _ ASR _ example . wav ")线全球资源定位器(Uniform Resource Locator)) {
-        返回tongYiAudioTranscriptionService。音频转录(全球资源定位器(Uniform Resource Locator));
+    private final TongYiAudioTranscriptionService tongYiAudioTranscriptionService;
+
+    public AudioTranscriptionController(TongYiAudioTranscriptionService tongYiAudioTranscriptionService) {
+        this.tongYiAudioTranscriptionService = tongYiAudioTranscriptionService;
+    }
+
+    @GetMapping("/audio/transcription")
+    @ResponseStatus(HttpStatus.OK)
+    public String audioTranscription(@RequestParam(
+        value = "audioUrls",
+        defaultValue = "https://dashscope.oss-cn-beijing.aliyuncs.com/samples/audio/paraformer/realtime_asr_example.wav"
+    ) String url) {
+        // 参数校验
+        if (!isValidUrl(url)) {
+            throw new IllegalArgumentException("Invalid URL provided.");
+        }
+
+        try {
+            return tongYiAudioTranscriptionService.audioTranscription(url);
+        } catch (Exception e) {
+            // 异常处理逻辑
+            // 此处可以根据具体情况记录日志、发送告警等
+            System.err.println("Failed to transcribe audio: " + e.getMessage());
+            throw new RuntimeException("Failed to process audio transcription.", e);
+        }
+    }
+
+    private boolean isValidUrl(String url) {
+        // URL校验逻辑，可以使用正则表达式、第三方库等进行实现
+        // 此处仅为示例，实际应用中可能需要更严格的校验
+        String regex = "https?://.+.wav";
+        return url.matches(regex);
     }
 
     /**
-*依桐文本嵌入的服务接口，用于生成文本嵌入。
+     * Service interface for TongYi's text embedding, used for generating embeddings for text.
      */
-@自动连线
-@限定符(" tongYiTextEmbeddingServiceImpl ")
-    私人的统一服务tongYiTextEmbeddingService;
+    @Autowired
+    @Qualifier("tongYiTextEmbeddingServiceImpl")
+    private TongYiService tongYiTextEmbeddingService;
 
     /**
-*为指定文本生成嵌入内容。
-* @param text输入文本，默认为"春云阿里巴巴AI框架!"。
-* @返回表示文本嵌入的双精度值列表。
+     * Generates embeddings for the specified text.
+     * @param text The input text, default is "Spring Cloud Alibaba AI 框架！".
+     * @return A list of doubles representing the text embedding.
      */
-@GetMapping("/textEmbedding ")
-    公众的列表< Double >文本嵌入(@RequestParam(值="文本",
-默认值=“春云阿里巴巴AI框架!")线文本) {
-        返回tongYiTextEmbeddingService。文本嵌入(文本);
+    @GetMapping("/textEmbedding")
+    public List<Double> textEmbedding(@RequestParam(value = "text",
+            defaultValue = "Spring Cloud Alibaba AI 框架！") String text) {
+        return tongYiTextEmbeddingService.textEmbedding(text);
     }
 
-			   }
+}
